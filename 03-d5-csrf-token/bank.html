@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D5 - 真实银行 (受害者)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+</head>
+<body class="container">
+    <hgroup>
+        <h2>🏦 您的银行账户</h2>
+        <p>当前状态：正常登录中</p>
+    </hgroup>
+    
+    <article style="text-align: center;">
+        <p>当前余额：<strong id="balance" style="font-size: 32px; color: #2ecc71;">加载中...</strong> 元</p>
+        <button onclick="refreshBalance()">刷新余额</button>
+    </article>
+
+    <article style="background-color: #fdf2f2; border-color: #e74c3c;">
+        <header style="color: #e74c3c;">⚠️ 危险提示</header>
+        <p>如果你在另一个标签页点开了黑客发给你的链接（hacker.html），你的余额可能会凭空消失！</p>
+    </article>
+
+    <!-- 漏掉的就是下面这坨代码！ -->
+    <script>
+        async function refreshBalance() {
+            try {
+                const res = await fetch('/api/balance');
+                const data = await res.json();
+                document.getElementById('balance').textContent = data.balance;
+            } catch (error) {
+                console.error("获取失败", error);
+                document.getElementById('balance').textContent = "获取失败";
+            }
+        }
+        // 页面加载时自动执行一次
+        refreshBalance();
+    </script>
+</body>
+</html>

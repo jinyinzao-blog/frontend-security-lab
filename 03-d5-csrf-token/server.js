@@ -5,12 +5,17 @@ const path = require('path');
 const app = express();
 const PORT = 3000;
 
-// 假装这是我们银行的数据库
+// 假装这是银行的数据库
 let balance = 1000;
 const tokens = new Set(); // 存放合法的 Token
 
 app.use(express.json());
 app.use(express.static(__dirname)); // 让后端能访问当前文件夹的 html 文件
+
+// 新增：访问根目录时，自动跳转到 bank.html
+app.get('/', (req, res) => {
+    res.redirect('/bank.html');
+});
 
 // 1. 获取当前余额
 app.get('/api/balance', (req, res) => {
@@ -25,7 +30,6 @@ app.get('/api/token', (req, res) => {
 });
 
 // 3. 漏洞接口：GET 请求直接转账（极其不安全！）
-// 黑客只要诱骗你点个链接，或者放个 <img src="..."> 就能把钱转走
 app.get('/api/unsafe-transfer', (req, res) => {
     balance -= 100;
     res.json({ message: '转账成功（漏洞模式）', balance });
