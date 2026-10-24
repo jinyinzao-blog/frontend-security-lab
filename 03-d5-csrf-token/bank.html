@@ -4,38 +4,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>D5 - 真实银行 (受害者)</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2.0.6/css/pico.min.css">
 </head>
 <body class="container">
     <hgroup>
         <h2>🏦 您的银行账户</h2>
-        <p>当前状态：正常登录中</p>
+        <p>当前状态：<span id="loginStatus" style="color: red;">未登录</span></p>
     </hgroup>
     
     <article style="text-align: center;">
-        <p>当前余额：<strong id="balance" style="font-size: 32px; color: #2ecc71;">加载中...</strong> 元</p>
-        <button onclick="refreshBalance()">刷新余额</button>
+        <p>当前余额：<strong id="balance" style="font-size: 32px; color: #2ecc71;">等待登录...</strong> 元</p>
+        
+        <div class="grid">
+            <button onclick="login()">1. 模拟登录 (获取 Cookie)</button>
+            <button onclick="refreshBalance()" class="secondary">2. 刷新余额</button>
+        </div>
     </article>
 
     <article style="background-color: #fdf2f2; border-color: #e74c3c;">
         <header style="color: #e74c3c;">⚠️ 危险提示</header>
-        <p>如果你在另一个标签页点开了黑客发给你的链接（hacker.html），你的余额可能会凭空消失！</p>
+        <p>如果你在另一个标签页点开了黑客发给你的链接（<code>hacker.html</code>），你的余额可能会凭空消失！</p>
     </article>
 
-    <!-- 漏掉的就是下面这坨代码！ -->
     <script>
+        async function login() {
+            // 向后端请求登录，后端会自动把 Cookie 种在浏览器里
+            await fetch('/api/d5/login', { method: 'POST' });
+            document.getElementById('loginStatus').textContent = "已登录 (Cookie 已种下)";
+            document.getElementById('loginStatus').style.color = "green";
+            refreshBalance();
+        }
+
         async function refreshBalance() {
             try {
                 const res = await fetch('/api/d5/balance');
                 const data = await res.json();
+                if (res.status === 401) {
+                    document.getElementById('balance').textContent = "未登录";
+                    return;
+                }
                 document.getElementById('balance').textContent = data.balance;
             } catch (error) {
-                console.error("获取失败", error);
                 document.getElementById('balance').textContent = "获取失败";
             }
         }
-        // 页面加载时自动执行一次
-        refreshBalance();
     </script>
 </body>
 </html>

@@ -4,16 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>D4 - Markdown 富文本 XSS 防御</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2.0.6/css/pico.min.css">
 </head>
 <body class="container">
     <hgroup>
-        <h2>实验 2：DOM 型 XSS 与 Markdown 清洗</h2>
+        <h2>🛡️ 实验 2：DOM 型 XSS 与 Markdown 清洗</h2>
         <p>模拟论坛留言，演示 <code>DOMPurify</code> 如何拦截恶意代码。</p>
     </hgroup>
 
     <article>
-        <header>提示：试着输入以下 Payload</header>
+        <header>💡 提示：试着输入以下 Payload</header>
         <p>尝试输入：<code>&lt;img src=x onerror=alert('XSS')&gt;</code> 或者 Markdown 语法 <code>**加粗**</code></p>
     </article>
 

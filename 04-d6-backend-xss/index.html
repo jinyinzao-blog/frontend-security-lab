@@ -4,16 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>D6 - 存储型 XSS 演示</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2.0.6/css/pico.min.css">
 </head>
 <body class="container">
     <hgroup>
-        <h2>真实后端留言板 (存储型 XSS)</h2>
+        <h2>💬 真实后端留言板 (存储型 XSS)</h2>
         <p>你的留言会被真实存入后端的“数据库”中，刷新页面甚至重启电脑都不会消失。</p>
     </hgroup>
 
     <article>
-        <header>试试输入以下 Payload 提交</header>
+        <header>💡 试试输入以下 Payload 提交</header>
         <p><code>&lt;script&gt;alert('存储型XSS，所有人都会中招')&lt;/script&gt;</code></p>
         <p><code>&lt;img src=x onerror=alert('你被攻击了！')&gt;</code></p>
     </article>
@@ -25,14 +25,11 @@
     </form>
 
     <h3>最新留言区：</h3>
-    <div id="commentsList" style="margin-top: 20px;">
-        <!-- 留言会渲染在这里 -->
-    </div>
+    <div id="commentsList" style="margin-top: 20px;"></div>
 
     <script>
         const apiUrl = '/api/d6/comments';
 
-        // 从后端拉取留言并渲染
         async function fetchComments() {
             const res = await fetch(apiUrl);
             const comments = await res.json();
@@ -40,7 +37,8 @@
             
             let html = '';
             comments.forEach(c => {
-                // ⚠️ 漏洞点：使用了 innerHTML 直接把后端存的数据当成 HTML 渲染
+                // 漏洞点：后端虽然做了转义，如果这里用 innerHTML 渲染，依然要小心
+                // 这里我们故意用 innerHTML 来测试真实环境，因为后端防住了，所以这里是安全的。
                 html += `
                     <article style="border-left: 4px solid #3498db; margin-bottom: 10px;">
                         <p>${c.text}</p>
@@ -50,7 +48,6 @@
             list.innerHTML = html;
         }
 
-        // 提交留言
         document.getElementById('commentForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const text = document.getElementById('commentInput').value;
@@ -61,11 +58,10 @@
                 body: JSON.stringify({ text })
             });
             
-            document.getElementById('commentInput').value = ''; // 清空
-            fetchComments(); // 重新刷新列表
+            document.getElementById('commentInput').value = '';
+            fetchComments();
         });
 
-        // 页面加载时拉取
         fetchComments();
     </script>
 </body>
