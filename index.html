@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>前端安全靶场 - 总控台</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+</head>
+<body class="container">
+    <hgroup style="text-align: center; margin-top: 50px;">
+        <h1>前端安全靶场 (Security Lab)</h1>
+        <p>本地学习用，覆盖 XSS、CSRF 攻击与防御机制演示。</p>
+    </hgroup>
+
+    <div class="grid">
+        <article>
+            <header><h3>实验 1：反射型 XSS</h3></header>
+            <p>演示 <code>innerHTML</code> 漏洞与 Cookie 窃取。</p>
+            <a href="/01-d3-innerHTML-vs-textContent/index.html" role="button">进入实验</a>
+        </article>
+
+        <article>
+            <header><h3>实验 2：富文本 XSS</h3></header>
+            <p>演示 Markdown 解析与 <code>DOMPurify</code> 清洗。</p>
+            <a href="/02-d4-markdown-sanitize/index.html" role="button">进入实验</a>
+        </article>
+    </div>
+
+    <div class="grid">
+        <article>
+            <header><h3>实验 3：CSRF 跨站伪造</h3></header>
+            <p>模拟真实银行页面与黑客伪造请求的攻防。</p>
+            <a href="/03-d5-csrf-token/bank.html" role="button">进入银行 (受害者)</a>
+            <a href="/03-d5-csrf-token/hacker.html" role="button" class="secondary">进入钓鱼 (黑客)</a>
+        </article>
+
+        <article>
+            <header><h3>实验 4：存储型 XSS</h3></header>
+            <p>带 Node.js 后端的留言板，演示持久化攻击。</p>
+            <a href="/04-d6-backend-xss/index.html" role="button">进入留言板</a>
+        </article>
+    </div>
+</body>
+</html>

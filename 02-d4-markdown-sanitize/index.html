@@ -2,27 +2,43 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>D4 - Markdown 清洗防御</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D4 - Markdown 富文本 XSS 防御</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
 </head>
-<body>
-    <h2>Markdown 留言板防 XSS 演示</h2>
-    <p>试着输入：<code>&lt;img src=x onerror=alert('XSS')&gt;</code> 或者 <code>**加粗**</code></p>
-    
-    <textarea id="input" rows="4" style="width: 100%;">Hello **Markdown**!</textarea>
-    <br><br>
-    <button id="render-unsafe">漏洞模式（直接渲染）</button>
-    <button id="render-safe">防御模式（DOMPurify清洗）</button>
+<body class="container">
+    <hgroup>
+        <h2>实验 2：DOM 型 XSS 与 Markdown 清洗</h2>
+        <p>模拟论坛留言，演示 <code>DOMPurify</code> 如何拦截恶意代码。</p>
+    </hgroup>
 
-    <h3>不安全输出：</h3>
-    <div id="output-unsafe" style="border: 1px solid red; padding: 10px; margin-bottom: 20px;"></div>
+    <article>
+        <header>提示：试着输入以下 Payload</header>
+        <p>尝试输入：<code>&lt;img src=x onerror=alert('XSS')&gt;</code> 或者 Markdown 语法 <code>**加粗**</code></p>
+    </article>
 
-    <h3>清洗后输出：</h3>
-    <div id="output-safe" style="border: 1px solid green; padding: 10px;"></div>
+    <label for="input">留言内容 (支持 Markdown)：</label>
+    <textarea id="input" rows="4" placeholder="在这里输入留言...">Hello **Markdown**!</textarea>
 
-    <!-- 引入第三方库 -->
+    <div class="grid">
+        <button id="render-unsafe" class="contrast" style="background-color: #e74c3c; border-color: #e74c3c;">⚠️ 漏洞模式（直接解析）</button>
+        <button id="render-safe" style="background-color: #2ecc71; border-color: #2ecc71;">✅ 防御模式（DOMPurify清洗）</button>
+    </div>
+
+    <div class="grid">
+        <article style="border-left: 4px solid #e74c3c;">
+            <header>不安全输出：</header>
+            <div id="output-unsafe"></div>
+        </article>
+        
+        <article style="border-left: 4px solid #2ecc71;">
+            <header>清洗后输出：</header>
+            <div id="output-safe"></div>
+        </article>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
-    <!-- 引入我们自己的逻辑 -->
     <script src="app.js"></script>
 </body>
 </html>
