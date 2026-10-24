@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>D4 - Markdown 清洗防御</title>
+</head>
+<body>
+    <h2>Markdown 留言板防 XSS 演示</h2>
+    <p>试着输入：<code>&lt;img src=x onerror=alert('XSS')&gt;</code> 或者 <code>**加粗**</code></p>
+    
+    <textarea id="input" rows="4" style="width: 100%;">Hello **Markdown**!</textarea>
+    <br><br>
+    <button id="render-unsafe">漏洞模式（直接渲染）</button>
+    <button id="render-safe">防御模式（DOMPurify清洗）</button>
+
+    <h3>不安全输出：</h3>
+    <div id="output-unsafe" style="border: 1px solid red; padding: 10px; margin-bottom: 20px;"></div>
+
+    <h3>清洗后输出：</h3>
+    <div id="output-safe" style="border: 1px solid green; padding: 10px;"></div>
+
+    <!-- 引入第三方库 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+    <!-- 引入我们自己的逻辑 -->
+    <script src="app.js"></script>
+</body>
+</html>
