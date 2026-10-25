@@ -5,7 +5,7 @@ const path = require('path');
 const cookieParser = require('cookie-parser'); // 需要用到这个库解析 Cookie
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
