@@ -7,7 +7,77 @@
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     
     <style>
-        /* ================= 右侧：完全复刻图1的复古终端 ================= */
+        /* ================== 底层动态粒子网络 ================== */
+        #network-canvas {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%; z-index: 0;
+            pointer-events: none; opacity: 0.4; 
+        }
+
+        /* ================== 代码雨画布 ================== */
+        #herobrine-canvas {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%; z-index: 1; 
+            pointer-events: none; opacity: 0.15;
+            mask-image: radial-gradient(circle at center, transparent 30%, black 100%);
+            -webkit-mask-image: radial-gradient(circle at center, transparent 30%, black 100%);
+        }
+
+        .art-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; }
+        .center-text {
+            position: relative; z-index: 10;
+            background: rgba(5, 5, 5, 0.85);
+            backdrop-filter: blur(8px);
+            border: 1px solid #333; box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+            border-radius: 8px; padding: 30px 50px;
+        }
+
+        /* ================== 场景二：攻防双屏通用动画 ================== */
+        /* 卡片入场动画 (从两侧滑入) */
+        #scene-2.active .attack-card {
+            animation: slideInLeft 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+        #scene-2.active .protect-card {
+            animation: slideInRight 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+        @keyframes slideInLeft {
+            0% { opacity: 0; transform: translateX(-100px); }
+            100% { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slideInRight {
+            0% { opacity: 0; transform: translateX(100px); }
+            100% { opacity: 1; transform: translateX(0); }
+        }
+
+        /* ================== 左侧：ATTACK 雷达动画 ================== */
+        .radar-container { overflow: hidden; }
+        
+        /* 雷达扫描线 */
+        .radar-sweep {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 400px; height: 400px;
+            margin: -200px 0 0 -200px;
+            background: conic-gradient(from 0deg, transparent 0deg, rgba(0, 255, 0, 0.2) 90deg, transparent 90deg);
+            border-radius: 50%;
+            animation: sweep 4s linear infinite;
+            pointer-events: none;
+        }
+        @keyframes sweep {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 散落元素随机闪烁 */
+        #crosses text, #green-blocks rect {
+            animation: blink-random 2s infinite alternate;
+        }
+        @keyframes blink-random {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+        }
+
+        /* ================== 右侧：PROTECT 终端星图动画 ================== */
         .protect-card {
             background-color: #0d0d0d !important;
             padding: 15px !important;
@@ -16,44 +86,56 @@
             display: flex;
             flex-direction: column;
         }
-
-        /* CRT 扫描线 */
         .protect-card::after {
-            content: " ";
-            position: absolute; top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-                        linear-gradient(90deg, rgba(57, 255, 20, 0.03), rgba(0, 255, 0, 0.01), rgba(57, 255, 20, 0.03));
+            content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(57, 255, 20, 0.03), rgba(0, 255, 0, 0.01), rgba(57, 255, 20, 0.03));
             z-index: 5; pointer-events: none; background-size: 100% 3px, 3px 100%;
         }
-
-        .term-wrapper {
-            width: 100%; height: 100%; display: flex; flex-direction: column;
-            font-family: 'VT323', monospace; color: #39FF14; font-size: 16px; line-height: 1.1;
-        }
-
-        /* 标题和通用边框 */
+        .term-wrapper { width: 100%; height: 100%; display: flex; flex-direction: column; font-family: 'VT323', monospace; color: #39FF14; font-size: 16px; line-height: 1.1; }
         .term-title { font-size: 20px; margin-bottom: 5px; text-shadow: 0 0 5px rgba(57, 255, 20, 0.5); }
         .term-bar { border: 1px solid #39FF14; padding: 3px 6px; display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 14px; }
         .term-box { border: 1px solid #39FF14; padding: 6px; flex: 1; font-size: 13px; }
-
-        /* 顶部双列 */
+        
         .term-top-row { display: flex; gap: 8px; margin-bottom: 6px; }
         .term-top-row .text-box { flex: 1.5; }
         .term-top-row .moon-box { flex: 1; display: flex; flex-direction: column; justify-content: center; position: relative; }
         .moon-line { border-top: 1px solid #39FF14; width: 100%; margin: 2px 0; }
         .moon-curve { position: absolute; right: 10px; top: 10px; width: 30px; height: 30px; border: 1px solid #39FF14; border-radius: 50%; border-right-color: transparent; }
 
-        /* 核心星图区 */
         .term-map-container { flex: 1; border: 1px solid #39FF14; position: relative; margin-bottom: 6px; background: #050505; overflow: hidden; }
         .term-svg { width: 100%; height: 100%; }
 
-        /* 底部三列 */
+        /* 星图流动线条 */
+        .orbit-line {
+            stroke-dasharray: 10 5;
+            animation: dashFlow 3s linear infinite;
+        }
+        @keyframes dashFlow {
+            to { stroke-dashoffset: -30; }
+        }
+
+        /* 核心星体脉冲 */
+        .core-star {
+            animation: pulse-star 2s infinite alternate;
+        }
+        @keyframes pulse-star {
+            0% { r: 3; filter: drop-shadow(0 0 2px #fff); }
+            100% { r: 5; filter: drop-shadow(0 0 10px #fff); }
+        }
+
+        /* 终端文字闪烁 */
+        .term-bar span {
+            animation: text-flicker 4s infinite;
+        }
+        @keyframes text-flicker {
+            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+            20%, 22%, 24%, 55% { opacity: 0.5; }
+        }
+
         .term-bottom-row { display: flex; gap: 8px; margin-bottom: 6px; }
         .logo-box { flex: 0.8; display: flex; flex-direction: column; justify-content: center; }
         .prompt-box { flex: 1.2; display: flex; flex-direction: column; justify-content: center; }
         .barcode-box { flex: 0.6; padding: 2px; font-size: 11px; line-height: 1.1; text-align: right; letter-spacing: 1px; opacity: 0.8; }
-
-        /* 按钮悬浮 */
         .protect-links { position: absolute; bottom: 10px; right: 10px; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; z-index: 10; background: rgba(0,0,0,0.8); padding: 5px 10px; border: 1px solid #39FF14; }
         .protect-links a { color: #39FF14; text-decoration: none; font-family: 'VT323', monospace; font-size: 18px; }
         .protect-links a:hover { text-shadow: 0 0 8px #39FF14; }
@@ -64,8 +146,11 @@
 
     <div id="transition-overlay" class="overlay"></div>
 
-    <!-- 场景一：数据大屏 -->
+    <!-- ================= 场景一：数据大屏 ================= -->
     <div id="scene-1" class="scene active">
+        <canvas id="network-canvas"></canvas>
+        <canvas id="herobrine-canvas"></canvas> 
+
         <div class="art-layer">
             <div class="art-orange"></div>
             <div class="art-green"></div>
@@ -79,73 +164,42 @@
                     <div>}</div>
                 </div>
             </div>
-            <div class="art-yellow"></div>
         </div>
 
         <div class="center-text">
+            <div id="herobrine-terminal-log" style="font-family: 'VT323', monospace; color: #00ff66; font-size: 18px; text-align: left; margin-bottom: 15px; min-height: 80px;"></div>
+            
             <h1 class="glitch-text" data-text="Herobrine is watching you." style="font-size: 32px; letter-spacing: 2px;">
                 Herobrine is watching you.
             </h1>
             <p style="margin-top: 10px;">寻找不存在的实体... 寻找被隐藏的漏洞。</p>
             <button class="enter-btn" onclick="switchScene(2)">> ACCESS_MAINFRAME</button>
         </div>
-
-        <div class="nav-buttons">
-            <a href="/01-d3-innerHTML-vs-textContent/index.html" class="nav-btn">> [D3] 反射型 XSS</a>
-            <a href="/02-d4-markdown-sanitize/index.html" class="nav-btn">> [D4] 富文本清洗</a>
-            <div style="display: flex; gap: 10px;">
-                <a href="/03-d5-csrf-token/bank.html" class="nav-btn" style="flex:1; padding:12px 5px;">银行端</a>
-                <a href="/03-d5-csrf-token/hacker.html" class="nav-btn danger" style="flex:1; padding:12px 5px;">黑客端</a>
-            </div>
-            <a href="/04-d6-backend-xss/index.html" class="nav-btn">> [D6] 存储型 XSS</a>
-        </div>
     </div>
 
-    <!-- 场景二：攻防双屏 -->
+    <!-- ================= 场景二：攻防双屏 ================= -->
     <div id="scene-2" class="scene">
-        
-        <!-- 左屏：ATTACK (雷达图) -->
+        <!-- 左屏：ATTACK -->
         <div class="panel-card attack-card">
-            <div class="top-desc">
-                Hundreds of autonomous agents act like real<br>
-                pentesters, discovering and exploiting flaws<br>
-                across your apps, APIs and infrastructure.
-            </div>
-            
-            <div class="card-title-box">
-                <div class="icon">✣</div>
-                <h2 class="title">Attack</h2>
-            </div>
-
+            <div class="top-desc">Hundreds of autonomous agents act like real<br>pentesters, discovering and exploiting flaws<br>across your apps, APIs and infrastructure.</div>
+            <div class="card-title-box"><div class="icon">✣</div><h2 class="title">Attack</h2></div>
             <div class="radar-container">
+                <!-- 新增：雷达扫描线动画 -->
+                <div class="radar-sweep"></div>
                 <svg viewBox="0 0 500 500" class="radar-svg">
                     <defs>
-                        <pattern id="hatch-blue" width="6" height="6" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
-                            <line x1="0" y1="0" x2="0" y2="6" stroke="#0044ff" stroke-width="2"/>
-                        </pattern>
-                        <pattern id="hatch-dark" width="8" height="8" patternTransform="rotate(-30 0 0)" patternUnits="userSpaceOnUse">
-                            <line x1="0" y1="0" x2="0" y2="8" stroke="#000" stroke-width="1.5" opacity="0.1"/>
-                        </pattern>
-                        <mask id="radar-mask">
-                            <rect width="500" height="500" fill="white" />
-                            <circle cx="250" cy="250" r="50" fill="black" />
-                            <circle cx="250" cy="250" r="90" fill="black" />
-                        </mask>
+                        <pattern id="hatch-blue" width="6" height="6" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse"><line x1="0" y1="0" x2="0" y2="6" stroke="#0044ff" stroke-width="2"/></pattern>
+                        <pattern id="hatch-dark" width="8" height="8" patternTransform="rotate(-30 0 0)" patternUnits="userSpaceOnUse"><line x1="0" y1="0" x2="0" y2="8" stroke="#000" stroke-width="1.5" opacity="0.1"/></pattern>
+                        <mask id="radar-mask"><rect width="500" height="500" fill="white" /><circle cx="250" cy="250" r="50" fill="black" /><circle cx="250" cy="250" r="90" fill="black" /></mask>
                     </defs>
                     <rect width="500" height="500" fill="url(#hatch-dark)" />
                     <circle cx="250" cy="250" r="150" fill="url(#hatch-blue)" mask="url(#radar-mask)" />
                     <circle cx="250" cy="250" r="50" fill="url(#hatch-blue)" />
-                    <g fill="none" stroke="#ffffff" stroke-width="2" opacity="0.9">
-                        <circle cx="250" cy="250" r="150" />
-                        <circle cx="250" cy="250" r="90" />
-                        <circle cx="250" cy="250" r="50" />
-                        <circle cx="250" cy="250" r="200" opacity="0.4" stroke-dasharray="4 4" />
-                    </g>
+                    <g fill="none" stroke="#ffffff" stroke-width="2" opacity="0.9"><circle cx="250" cy="250" r="150" /><circle cx="250" cy="250" r="90" /><circle cx="250" cy="250" r="50" /><circle cx="250" cy="250" r="200" opacity="0.4" stroke-dasharray="4 4" /></g>
                     <g id="crosses" fill="#000" font-family="monospace" font-size="16" opacity="0.6"></g>
                     <g id="green-blocks" fill="#00ff00"></g>
                 </svg>
             </div>
-
             <div class="bottom-links attack-links">
                 <a href="/01-d3-innerHTML-vs-textContent/index.html">> [D3] 反射型 XSS</a>
                 <a href="/04-d6-backend-xss/index.html">> [D6] 存储型 XSS</a>
@@ -153,126 +207,206 @@
             </div>
         </div>
 
-        <!-- 右屏：图1完美复刻 (复古星图) -->
+        <!-- 右屏：PROTECT (太空终端动画版) -->
         <div class="panel-card protect-card">
             <div class="term-wrapper">
                 <div class="term-title">>RECORDING.ini_</div>
-                
                 <div class="term-top-row">
-                    <div class="term-box text-box">
-                        after sending your instructions to the probes / check the most drawn card suit during the planning phase and the current phase of the moon // write down in your diary whatever is asked of you // you may be as concise or as lengthy as you wish
-                    </div>
-                    <div class="term-box moon-box">
-                        <div class="moon-curve"></div>
-                        <div>MOON-E_</div>
-                        <div class="moon-line"></div>
-                        <div>BTF.V</div>
-                        <div class="moon-line" style="margin-top: 10px;"></div>
-                        <div>TAU-E_</div>
-                    </div>
+                    <div class="term-box text-box">after sending your instructions to the probes / check the most drawn card suit during the planning phase and the current phase of the moon // write down in your diary whatever is asked of you // you may be as concise or as lengthy as you wish</div>
+                    <div class="term-box moon-box"><div class="moon-curve"></div><div>MOON-E_</div><div class="moon-line"></div><div>BTF.V</div><div class="moon-line" style="margin-top: 10px;"></div><div>TAU-E_</div></div>
                 </div>
-
-                <div class="term-bar">
-                    <span>BIRDTAKEFLIGHT.ORBIT.PATH</span>
-                    <span>⦀ ⦀ /</span>
-                </div>
-
-                <!-- 核心星图 -->
+                <div class="term-bar"><span>BIRDTAKEFLIGHT.ORBIT.PATH</span><span>⦀ ⦀ /</span></div>
                 <div class="term-map-container">
                     <svg viewBox="0 0 600 400" class="term-svg" preserveAspectRatio="xMidYMid meet">
-                        <!-- 大轨道圆 -->
-                        <circle cx="250" cy="200" r="160" fill="none" stroke="#39FF14" stroke-width="1.5" />
+                        <!-- 核心轨道圆，添加了流动虚线动画 -->
+                        <circle cx="250" cy="200" r="160" fill="none" stroke="#39FF14" stroke-width="1.5" class="orbit-line" />
+                        <line x1="90" y1="200" x2="410" y2="200" stroke="#39FF14" stroke-width="1" class="orbit-line" />
+                        <path d="M 150 60 Q 250 200 150 340" fill="none" stroke="#39FF14" stroke-width="1" class="orbit-line" />
+                        <path d="M 260 40 Q 360 200 260 360" fill="none" stroke="#39FF14" stroke-width="1" class="orbit-line" />
                         
-                        <!-- 赤道和经线 -->
-                        <line x1="90" y1="200" x2="410" y2="200" stroke="#39FF14" stroke-width="1" />
-                        <path d="M 150 60 Q 250 200 150 340" fill="none" stroke="#39FF14" stroke-width="1" />
-                        <path d="M 260 40 Q 360 200 260 360" fill="none" stroke="#39FF14" stroke-width="1" />
-                        
-                        <!-- 危险红线 -->
-                        <polygon points="250,200 160,70 190,65" fill="none" stroke="#FF3333" stroke-width="1.5" />
-                        <line x1="250" y1="200" x2="150" y2="140" stroke="#FF3333" stroke-width="1.5" />
+                        <!-- 危险区域 (添加流动) -->
+                        <polygon points="250,200 160,70 190,65" fill="none" stroke="#FF3333" stroke-width="1.5" class="orbit-line" />
+                        <line x1="250" y1="200" x2="150" y2="140" stroke="#FF3333" stroke-width="1.5" class="orbit-line" />
                         <text x="110" y="100" fill="#39FF14" font-family="monospace" font-size="11" transform="rotate(20 110 100)">RADIAL HYPERSPACE</text>
                         
-                        <!-- 其他线 -->
                         <line x1="170" y1="80" x2="190" y2="60" stroke="#39FF14" stroke-width="1" />
                         <line x1="190" y1="60" x2="300" y2="70" stroke="#39FF14" stroke-width="1" />
-                        <line x1="250" y1="200" x2="380" y2="120" stroke="#39FF14" stroke-width="1" />
-                        <line x1="380" y1="120" x2="360" y2="260" stroke="#39FF14" stroke-width="1" />
+                        <line x1="250" y1="200" x2="380" y2="120" stroke="#39FF14" stroke-width="1" class="orbit-line" />
+                        <line x1="380" y1="120" x2="360" y2="260" stroke="#39FF14" stroke-width="1" class="orbit-line" />
 
-                        <!-- 核心星点 -->
-                        <circle cx="250" cy="200" r="3" fill="#fff" filter="drop-shadow(0 0 5px #fff)" />
+                        <!-- 核心星体，添加脉冲动画 -->
+                        <circle cx="250" cy="200" r="3" fill="#fff" class="core-star" />
                         <text x="260" y="205" fill="#39FF14" font-family="monospace" font-size="11">PRIMITIVE STAR</text>
 
-                        <!-- 散落星体 -->
                         <circle cx="140" cy="210" r="8" fill="none" stroke="#39FF14" stroke-width="1" />
                         <circle cx="180" cy="230" r="6" fill="none" stroke="#39FF14" stroke-width="1" />
                         <circle cx="320" cy="280" r="3" fill="none" stroke="#39FF14" stroke-width="1" />
                         
-                        <!-- 文本标注 -->
                         <text x="110" y="200" fill="#39FF14" font-family="monospace" font-size="11">TAU-CETI</text>
                         <text x="140" y="320" fill="#39FF14" font-family="monospace" font-size="11">CELESTIAL<br/>EQUATOR</text>
                         <text x="100" y="350" fill="#39FF14" font-family="monospace" font-size="11">JUPITER<br/>GATE</text>
                         <ellipse cx="120" cy="350" rx="15" ry="8" fill="none" stroke="#39FF14" stroke-width="1" transform="rotate(-20 120 350)" />
 
-                        <!-- 右侧方块区 -->
                         <rect x="420" y="160" width="35" height="35" fill="none" stroke="#39FF14" stroke-width="1" transform="rotate(-15 437 177)" />
                         <text x="460" y="180" fill="#39FF14" font-family="monospace" font-size="11">FONTES<br/>SQUARE<br/>ANOMALY</text>
 
-                        <!-- 经纬度标注 -->
                         <text x="420" y="320" fill="#39FF14" font-family="monospace" font-size="10">✣ => ALTITUDE</text>
                         <text x="420" y="335" fill="#39FF14" font-family="monospace" font-size="10">✣ => LATITUDE</text>
                         <text x="420" y="350" fill="#39FF14" font-family="monospace" font-size="10">⊖ => DECLINATION</text>
                     </svg>
                 </div>
-
-                <div class="term-bar">
-                    <span>STARDATE.18.45.649 // BTF.V CURRENTLY CARRYING 182 TONNES OF FROZEN HAM // +01</span>
-                </div>
-
+                <div class="term-bar"><span>STARDATE.18.45.649 // BTF.V CURRENTLY CARRYING 182 TONNES OF FROZEN HAM // +01</span></div>
                 <div class="term-bottom-row">
-                    <div class="term-box logo-box">
-                        <div style="font-size: 24px; margin-bottom: 5px;">(⏃)</div>
-                        <div style="font-size: 16px; font-weight: bold; line-height: 0.9;">HAPPY<br/>EARTH<br/>CORP</div>
-                    </div>
-                    <div class="term-box prompt-box">
-                        <div>RECORDING PROMPTS</div>
-                        <div>ON THE NEXT PAGE</div>
-                        <div>SAFETY INSTRUCTIONS</div>
-                        <div>ON PAG# ## ### ###/#</div>
-                    </div>
-                    <div class="term-box barcode-box">
-                        UNTT COMM MATRIX:<br/>
-                        ACTIVE LOADING...<br/>
-                        EMPTY LOADING...<br/>
-                        RENEWAL PROCESS:<br/>
-                        LOADING [Y]...<br/>
-                        LOADING [X]...<br/>
-                        ACTIVE / THANK YOU
-                    </div>
+                    <div class="term-box logo-box"><div style="font-size: 24px; margin-bottom: 5px;">(⏃)</div><div style="font-size: 16px; font-weight: bold; line-height: 0.9;">HAPPY<br/>EARTH<br/>CORP</div></div>
+                    <div class="term-box prompt-box"><div>RECORDING PROMPTS</div><div>ON THE NEXT PAGE</div><div>SAFETY INSTRUCTIONS</div><div>ON PAG# ## ### ###/#</div></div>
+                    <div class="term-box barcode-box">UNTT COMM MATRIX:<br/>ACTIVE LOADING...<br/>EMPTY LOADING...<br/>RENEWAL PROCESS:<br/>LOADING [Y]...<br/>LOADING [X]...<br/>ACTIVE / THANK YOU</div>
                 </div>
-                
-                <div class="term-box" style="margin-bottom: 0; font-size: 14px;">
-                    you may also record your voice, instead<br/>
-                    of or as an addition to writing it down
-                </div>
+                <div class="term-box" style="margin-bottom: 0; font-size: 14px;">you may also record your voice, instead<br/>of or as an addition to writing it down</div>
             </div>
-
-            <!-- 按钮 -->
             <div class="protect-links">
                 <a href="/02-d4-markdown-sanitize/index.html">> [D4] 富文本清洗</a>
                 <a href="/03-d5-csrf-token/bank.html" class="safe-link">> [D5] 银行安全端</a>
             </div>
         </div>
-
         <button class="return-btn" onclick="switchScene(1)">[ RETURN ]</button>
     </div>
 
-    <div class="herobrine-eyes">
-        <div class="eye"></div>
-        <div class="eye"></div>
-    </div>
+    <div class="herobrine-eyes"><div class="eye"></div><div class="eye"></div></div>
 
     <script>
+        // ================== 1. 底层粒子网络 ==================
+        const netCanvas = document.getElementById('network-canvas');
+        const netCtx = netCanvas.getContext('2d');
+        let netParticles = [];
+        const netColors = ['#00ff66', '#00e5ff', '#ff6b00', '#d100ff'];
+        
+        function resizeNetCanvas() {
+            netCanvas.width = window.innerWidth;
+            netCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeNetCanvas);
+        resizeNetCanvas();
+
+        class NetParticle {
+            constructor() {
+                this.x = Math.random() * netCanvas.width;
+                this.y = Math.random() * netCanvas.height;
+                this.vx = (Math.random() - 0.5) * 1.2;
+                this.vy = (Math.random() - 0.5) * 1.2;
+                this.radius = Math.random() * 2 + 1;
+                this.color = netColors[Math.floor(Math.random() * netColors.length)];
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x < 0 || this.x > netCanvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > netCanvas.height) this.vy *= -1;
+            }
+            draw() {
+                netCtx.beginPath();
+                netCtx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                netCtx.fillStyle = this.color;
+                netCtx.fill();
+            }
+        }
+        for (let i = 0; i < 60; i++) netParticles.push(new NetParticle());
+
+        function animateNet() {
+            netCtx.clearRect(0, 0, netCanvas.width, netCanvas.height);
+            for (let i = 0; i < netParticles.length; i++) {
+                netParticles[i].update();
+                netParticles[i].draw();
+                for (let j = i + 1; j < netParticles.length; j++) {
+                    const dx = netParticles[i].x - netParticles[j].x;
+                    const dy = netParticles[i].y - netParticles[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < 150) {
+                        netCtx.beginPath();
+                        netCtx.strokeStyle = `rgba(0, 255, 102, ${1 - distance / 150})`; 
+                        netCtx.lineWidth = 0.8;
+                        netCtx.moveTo(netParticles[i].x, netParticles[i].y);
+                        netCtx.lineTo(netParticles[j].x, netParticles[j].y);
+                        netCtx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animateNet);
+        }
+        animateNet();
+
+        // ================== 2. 代码雨 ==================
+        const hbCanvas = document.getElementById('herobrine-canvas');
+        const hbCtx = hbCanvas.getContext('2d');
+        
+        function resizeHbCanvas() {
+            hbCanvas.width = window.innerWidth;
+            hbCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeHbCanvas);
+        resizeHbCanvas();
+
+        const hbChars = 'ENTITY_303HEROBRINE0101SECURE_VOIDNULL'.split('');
+        const hbFontSize = 20;
+        let hbColumns = hbCanvas.width / hbFontSize;
+        let hbDrops = [];
+        for (let x = 0; x < hbColumns; x++) {
+            hbDrops[x] = Math.random() * hbCanvas.height;
+        }
+
+        function drawHerobrineCode() {
+            hbCtx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            hbCtx.fillRect(0, 0, hbCanvas.width, hbCanvas.height);
+
+            for (let i = 0; i < hbDrops.length; i++) {
+                const text = hbChars[Math.floor(Math.random() * hbChars.length)];
+                hbCtx.fillStyle = Math.random() > 0.98 ? '#ffffff' : '#00ff66'; 
+                hbCtx.font = hbFontSize + 'px monospace';
+                hbCtx.fillText(text, i * hbFontSize, hbDrops[i] * hbFontSize);
+
+                if (hbDrops[i] * hbFontSize > hbCanvas.height && Math.random() > 0.975) {
+                    hbDrops[i] = 0;
+                }
+                hbDrops[i]++;
+            }
+            requestAnimationFrame(drawHerobrineCode);
+        }
+        drawHerobrineCode();
+
+        // ================== 3. 终端日志打字机 ==================
+        const logContainer = document.getElementById('herobrine-terminal-log');
+        const logLines = [
+            "> INITIALIZING ENTITY_303...",
+            "> WARNING: UNAUTHORIZED ACCESS DETECTED",
+            "> INJECTING MALICIOUS PAYLOAD...",
+            "> [FAILED] PROTOCOL_BLOCK_01",
+            "> HEROBRINE IS BEHIND YOU."
+        ];
+        let currentLine = 0, currentChar = 0, currentText = "";
+
+        function typeTerminalLog() {
+            if (currentLine < logLines.length) {
+                if (currentChar < logLines[currentLine].length) {
+                    currentText += logLines[currentLine][currentChar];
+                    logContainer.innerHTML = currentText + '<span style="animation: blink 1s infinite;">_</span>';
+                    currentChar++;
+                    setTimeout(typeTerminalLog, 40);
+                } else {
+                    currentText += '<br>';
+                    currentLine++;
+                    currentChar = 0;
+                    setTimeout(typeTerminalLog, 600);
+                }
+            } else {
+                setTimeout(() => {
+                    currentText = ""; currentLine = 0; currentChar = 0;
+                    logContainer.innerHTML = "";
+                    typeTerminalLog();
+                }, 4000);
+            }
+        }
+        typeTerminalLog();
+
+        // ================== 4. 其他原有逻辑 ==================
         const purpleBox = document.getElementById('purpleBox');
         if (purpleBox) {
             for (let i = 0; i < 120; i++) {
@@ -289,18 +423,15 @@
             const crossesGroup = document.getElementById('crosses');
             const blocksGroup = document.getElementById('green-blocks');
             if (!crossesGroup || !blocksGroup) return;
-
             for (let i = 0; i < 60; i++) {
-                const x = Math.random() * 500;
-                const y = Math.random() * 500;
+                const x = Math.random() * 500; const y = Math.random() * 500;
                 if (y > 400) continue; 
                 const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
                 text.setAttribute("x", x); text.setAttribute("y", y); text.textContent = "+";
                 crossesGroup.appendChild(text);
             }
             for (let i = 0; i < 50; i++) {
-                const x = Math.random() * 500;
-                const y = Math.random() * 500;
+                const x = Math.random() * 500; const y = Math.random() * 500;
                 if (y > 400) continue;
                 const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
                 rect.setAttribute("x", x); rect.setAttribute("y", y);
