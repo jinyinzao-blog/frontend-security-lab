@@ -2,43 +2,330 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>前端安全靶场 - 总控台</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <title>SECURITY_LAB // TERMINAL</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ================= 右侧：完全复刻图1的复古终端 ================= */
+        .protect-card {
+            background-color: #0d0d0d !important;
+            padding: 15px !important;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* CRT 扫描线 */
+        .protect-card::after {
+            content: " ";
+            position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        linear-gradient(90deg, rgba(57, 255, 20, 0.03), rgba(0, 255, 0, 0.01), rgba(57, 255, 20, 0.03));
+            z-index: 5; pointer-events: none; background-size: 100% 3px, 3px 100%;
+        }
+
+        .term-wrapper {
+            width: 100%; height: 100%; display: flex; flex-direction: column;
+            font-family: 'VT323', monospace; color: #39FF14; font-size: 16px; line-height: 1.1;
+        }
+
+        /* 标题和通用边框 */
+        .term-title { font-size: 20px; margin-bottom: 5px; text-shadow: 0 0 5px rgba(57, 255, 20, 0.5); }
+        .term-bar { border: 1px solid #39FF14; padding: 3px 6px; display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 14px; }
+        .term-box { border: 1px solid #39FF14; padding: 6px; flex: 1; font-size: 13px; }
+
+        /* 顶部双列 */
+        .term-top-row { display: flex; gap: 8px; margin-bottom: 6px; }
+        .term-top-row .text-box { flex: 1.5; }
+        .term-top-row .moon-box { flex: 1; display: flex; flex-direction: column; justify-content: center; position: relative; }
+        .moon-line { border-top: 1px solid #39FF14; width: 100%; margin: 2px 0; }
+        .moon-curve { position: absolute; right: 10px; top: 10px; width: 30px; height: 30px; border: 1px solid #39FF14; border-radius: 50%; border-right-color: transparent; }
+
+        /* 核心星图区 */
+        .term-map-container { flex: 1; border: 1px solid #39FF14; position: relative; margin-bottom: 6px; background: #050505; overflow: hidden; }
+        .term-svg { width: 100%; height: 100%; }
+
+        /* 底部三列 */
+        .term-bottom-row { display: flex; gap: 8px; margin-bottom: 6px; }
+        .logo-box { flex: 0.8; display: flex; flex-direction: column; justify-content: center; }
+        .prompt-box { flex: 1.2; display: flex; flex-direction: column; justify-content: center; }
+        .barcode-box { flex: 0.6; padding: 2px; font-size: 11px; line-height: 1.1; text-align: right; letter-spacing: 1px; opacity: 0.8; }
+
+        /* 按钮悬浮 */
+        .protect-links { position: absolute; bottom: 10px; right: 10px; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; z-index: 10; background: rgba(0,0,0,0.8); padding: 5px 10px; border: 1px solid #39FF14; }
+        .protect-links a { color: #39FF14; text-decoration: none; font-family: 'VT323', monospace; font-size: 18px; }
+        .protect-links a:hover { text-shadow: 0 0 8px #39FF14; }
+        .protect-links a.safe-link { color: #fff; }
+    </style>
 </head>
-<body class="container">
-    <hgroup style="text-align: center; margin-top: 50px;">
-        <h1>前端安全靶场 (Security Lab)</h1>
-        <p>本地学习用，覆盖 XSS、CSRF 攻击与防御机制演示。</p>
-    </hgroup>
+<body class="split-body-override">
 
-    <div class="grid">
-        <article>
-            <header><h3>实验 1：反射型 XSS</h3></header>
-            <p>演示 <code>innerHTML</code> 漏洞与 Cookie 窃取。</p>
-            <a href="/01-d3-innerHTML-vs-textContent/index.html" role="button">进入实验</a>
-        </article>
+    <div id="transition-overlay" class="overlay"></div>
 
-        <article>
-            <header><h3>实验 2：富文本 XSS</h3></header>
-            <p>演示 Markdown 解析与 <code>DOMPurify</code> 清洗。</p>
-            <a href="/02-d4-markdown-sanitize/index.html" role="button">进入实验</a>
-        </article>
+    <!-- 场景一：数据大屏 -->
+    <div id="scene-1" class="scene active">
+        <div class="art-layer">
+            <div class="art-orange"></div>
+            <div class="art-green"></div>
+            <div class="art-purple-box" id="purpleBox">
+                <div class="code-window">
+                    <div>{</div>
+                    <div>&nbsp;&nbsp;<span class="key">"artifactType"</span>: <span class="val">"pipeline"</span>,</div>
+                    <div>&nbsp;&nbsp;<span class="key">"sessionId"</span>: <span class="val">"a_1"</span>,</div>
+                    <div>&nbsp;&nbsp;<span class="key">"createdAt"</span>: <span class="val">"2026-10-25"</span>,</div>
+                    <div>&nbsp;&nbsp;<span class="key">"status"</span>: <span class="val">"COMPROMISED"</span></div>
+                    <div>}</div>
+                </div>
+            </div>
+            <div class="art-yellow"></div>
+        </div>
+
+        <div class="center-text">
+            <h1 class="glitch-text" data-text="Herobrine is watching you." style="font-size: 32px; letter-spacing: 2px;">
+                Herobrine is watching you.
+            </h1>
+            <p style="margin-top: 10px;">寻找不存在的实体... 寻找被隐藏的漏洞。</p>
+            <button class="enter-btn" onclick="switchScene(2)">> ACCESS_MAINFRAME</button>
+        </div>
+
+        <div class="nav-buttons">
+            <a href="/01-d3-innerHTML-vs-textContent/index.html" class="nav-btn">> [D3] 反射型 XSS</a>
+            <a href="/02-d4-markdown-sanitize/index.html" class="nav-btn">> [D4] 富文本清洗</a>
+            <div style="display: flex; gap: 10px;">
+                <a href="/03-d5-csrf-token/bank.html" class="nav-btn" style="flex:1; padding:12px 5px;">银行端</a>
+                <a href="/03-d5-csrf-token/hacker.html" class="nav-btn danger" style="flex:1; padding:12px 5px;">黑客端</a>
+            </div>
+            <a href="/04-d6-backend-xss/index.html" class="nav-btn">> [D6] 存储型 XSS</a>
+        </div>
     </div>
 
-    <div class="grid">
-        <article>
-            <header><h3>实验 3：CSRF 跨站伪造</h3></header>
-            <p>模拟真实银行页面与黑客伪造请求的攻防。</p>
-            <a href="/03-d5-csrf-token/bank.html" role="button">进入银行 (受害者)</a>
-            <a href="/03-d5-csrf-token/hacker.html" role="button" class="secondary">进入钓鱼 (黑客)</a>
-        </article>
+    <!-- 场景二：攻防双屏 -->
+    <div id="scene-2" class="scene">
+        
+        <!-- 左屏：ATTACK (雷达图) -->
+        <div class="panel-card attack-card">
+            <div class="top-desc">
+                Hundreds of autonomous agents act like real<br>
+                pentesters, discovering and exploiting flaws<br>
+                across your apps, APIs and infrastructure.
+            </div>
+            
+            <div class="card-title-box">
+                <div class="icon">✣</div>
+                <h2 class="title">Attack</h2>
+            </div>
 
-        <article>
-            <header><h3>实验 4：存储型 XSS</h3></header>
-            <p>带 Node.js 后端的留言板，演示持久化攻击。</p>
-            <a href="/04-d6-backend-xss/index.html" role="button">进入留言板</a>
-        </article>
+            <div class="radar-container">
+                <svg viewBox="0 0 500 500" class="radar-svg">
+                    <defs>
+                        <pattern id="hatch-blue" width="6" height="6" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+                            <line x1="0" y1="0" x2="0" y2="6" stroke="#0044ff" stroke-width="2"/>
+                        </pattern>
+                        <pattern id="hatch-dark" width="8" height="8" patternTransform="rotate(-30 0 0)" patternUnits="userSpaceOnUse">
+                            <line x1="0" y1="0" x2="0" y2="8" stroke="#000" stroke-width="1.5" opacity="0.1"/>
+                        </pattern>
+                        <mask id="radar-mask">
+                            <rect width="500" height="500" fill="white" />
+                            <circle cx="250" cy="250" r="50" fill="black" />
+                            <circle cx="250" cy="250" r="90" fill="black" />
+                        </mask>
+                    </defs>
+                    <rect width="500" height="500" fill="url(#hatch-dark)" />
+                    <circle cx="250" cy="250" r="150" fill="url(#hatch-blue)" mask="url(#radar-mask)" />
+                    <circle cx="250" cy="250" r="50" fill="url(#hatch-blue)" />
+                    <g fill="none" stroke="#ffffff" stroke-width="2" opacity="0.9">
+                        <circle cx="250" cy="250" r="150" />
+                        <circle cx="250" cy="250" r="90" />
+                        <circle cx="250" cy="250" r="50" />
+                        <circle cx="250" cy="250" r="200" opacity="0.4" stroke-dasharray="4 4" />
+                    </g>
+                    <g id="crosses" fill="#000" font-family="monospace" font-size="16" opacity="0.6"></g>
+                    <g id="green-blocks" fill="#00ff00"></g>
+                </svg>
+            </div>
+
+            <div class="bottom-links attack-links">
+                <a href="/01-d3-innerHTML-vs-textContent/index.html">> [D3] 反射型 XSS</a>
+                <a href="/04-d6-backend-xss/index.html">> [D6] 存储型 XSS</a>
+                <a href="/03-d5-csrf-token/hacker.html" class="danger-link">> [D5] 黑客诱骗端</a>
+            </div>
+        </div>
+
+        <!-- 右屏：图1完美复刻 (复古星图) -->
+        <div class="panel-card protect-card">
+            <div class="term-wrapper">
+                <div class="term-title">>RECORDING.ini_</div>
+                
+                <div class="term-top-row">
+                    <div class="term-box text-box">
+                        after sending your instructions to the probes / check the most drawn card suit during the planning phase and the current phase of the moon // write down in your diary whatever is asked of you // you may be as concise or as lengthy as you wish
+                    </div>
+                    <div class="term-box moon-box">
+                        <div class="moon-curve"></div>
+                        <div>MOON-E_</div>
+                        <div class="moon-line"></div>
+                        <div>BTF.V</div>
+                        <div class="moon-line" style="margin-top: 10px;"></div>
+                        <div>TAU-E_</div>
+                    </div>
+                </div>
+
+                <div class="term-bar">
+                    <span>BIRDTAKEFLIGHT.ORBIT.PATH</span>
+                    <span>⦀ ⦀ /</span>
+                </div>
+
+                <!-- 核心星图 -->
+                <div class="term-map-container">
+                    <svg viewBox="0 0 600 400" class="term-svg" preserveAspectRatio="xMidYMid meet">
+                        <!-- 大轨道圆 -->
+                        <circle cx="250" cy="200" r="160" fill="none" stroke="#39FF14" stroke-width="1.5" />
+                        
+                        <!-- 赤道和经线 -->
+                        <line x1="90" y1="200" x2="410" y2="200" stroke="#39FF14" stroke-width="1" />
+                        <path d="M 150 60 Q 250 200 150 340" fill="none" stroke="#39FF14" stroke-width="1" />
+                        <path d="M 260 40 Q 360 200 260 360" fill="none" stroke="#39FF14" stroke-width="1" />
+                        
+                        <!-- 危险红线 -->
+                        <polygon points="250,200 160,70 190,65" fill="none" stroke="#FF3333" stroke-width="1.5" />
+                        <line x1="250" y1="200" x2="150" y2="140" stroke="#FF3333" stroke-width="1.5" />
+                        <text x="110" y="100" fill="#39FF14" font-family="monospace" font-size="11" transform="rotate(20 110 100)">RADIAL HYPERSPACE</text>
+                        
+                        <!-- 其他线 -->
+                        <line x1="170" y1="80" x2="190" y2="60" stroke="#39FF14" stroke-width="1" />
+                        <line x1="190" y1="60" x2="300" y2="70" stroke="#39FF14" stroke-width="1" />
+                        <line x1="250" y1="200" x2="380" y2="120" stroke="#39FF14" stroke-width="1" />
+                        <line x1="380" y1="120" x2="360" y2="260" stroke="#39FF14" stroke-width="1" />
+
+                        <!-- 核心星点 -->
+                        <circle cx="250" cy="200" r="3" fill="#fff" filter="drop-shadow(0 0 5px #fff)" />
+                        <text x="260" y="205" fill="#39FF14" font-family="monospace" font-size="11">PRIMITIVE STAR</text>
+
+                        <!-- 散落星体 -->
+                        <circle cx="140" cy="210" r="8" fill="none" stroke="#39FF14" stroke-width="1" />
+                        <circle cx="180" cy="230" r="6" fill="none" stroke="#39FF14" stroke-width="1" />
+                        <circle cx="320" cy="280" r="3" fill="none" stroke="#39FF14" stroke-width="1" />
+                        
+                        <!-- 文本标注 -->
+                        <text x="110" y="200" fill="#39FF14" font-family="monospace" font-size="11">TAU-CETI</text>
+                        <text x="140" y="320" fill="#39FF14" font-family="monospace" font-size="11">CELESTIAL<br/>EQUATOR</text>
+                        <text x="100" y="350" fill="#39FF14" font-family="monospace" font-size="11">JUPITER<br/>GATE</text>
+                        <ellipse cx="120" cy="350" rx="15" ry="8" fill="none" stroke="#39FF14" stroke-width="1" transform="rotate(-20 120 350)" />
+
+                        <!-- 右侧方块区 -->
+                        <rect x="420" y="160" width="35" height="35" fill="none" stroke="#39FF14" stroke-width="1" transform="rotate(-15 437 177)" />
+                        <text x="460" y="180" fill="#39FF14" font-family="monospace" font-size="11">FONTES<br/>SQUARE<br/>ANOMALY</text>
+
+                        <!-- 经纬度标注 -->
+                        <text x="420" y="320" fill="#39FF14" font-family="monospace" font-size="10">✣ => ALTITUDE</text>
+                        <text x="420" y="335" fill="#39FF14" font-family="monospace" font-size="10">✣ => LATITUDE</text>
+                        <text x="420" y="350" fill="#39FF14" font-family="monospace" font-size="10">⊖ => DECLINATION</text>
+                    </svg>
+                </div>
+
+                <div class="term-bar">
+                    <span>STARDATE.18.45.649 // BTF.V CURRENTLY CARRYING 182 TONNES OF FROZEN HAM // +01</span>
+                </div>
+
+                <div class="term-bottom-row">
+                    <div class="term-box logo-box">
+                        <div style="font-size: 24px; margin-bottom: 5px;">(⏃)</div>
+                        <div style="font-size: 16px; font-weight: bold; line-height: 0.9;">HAPPY<br/>EARTH<br/>CORP</div>
+                    </div>
+                    <div class="term-box prompt-box">
+                        <div>RECORDING PROMPTS</div>
+                        <div>ON THE NEXT PAGE</div>
+                        <div>SAFETY INSTRUCTIONS</div>
+                        <div>ON PAG# ## ### ###/#</div>
+                    </div>
+                    <div class="term-box barcode-box">
+                        UNTT COMM MATRIX:<br/>
+                        ACTIVE LOADING...<br/>
+                        EMPTY LOADING...<br/>
+                        RENEWAL PROCESS:<br/>
+                        LOADING [Y]...<br/>
+                        LOADING [X]...<br/>
+                        ACTIVE / THANK YOU
+                    </div>
+                </div>
+                
+                <div class="term-box" style="margin-bottom: 0; font-size: 14px;">
+                    you may also record your voice, instead<br/>
+                    of or as an addition to writing it down
+                </div>
+            </div>
+
+            <!-- 按钮 -->
+            <div class="protect-links">
+                <a href="/02-d4-markdown-sanitize/index.html">> [D4] 富文本清洗</a>
+                <a href="/03-d5-csrf-token/bank.html" class="safe-link">> [D5] 银行安全端</a>
+            </div>
+        </div>
+
+        <button class="return-btn" onclick="switchScene(1)">[ RETURN ]</button>
     </div>
+
+    <div class="herobrine-eyes">
+        <div class="eye"></div>
+        <div class="eye"></div>
+    </div>
+
+    <script>
+        const purpleBox = document.getElementById('purpleBox');
+        if (purpleBox) {
+            for (let i = 0; i < 120; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'purple-dot';
+                const rand = Math.random();
+                if (rand > 0.7) dot.classList.add('green');
+                else if (rand > 0.5) dot.classList.add('dark');
+                purpleBox.appendChild(dot);
+            }
+        }
+
+        function generateNoise() {
+            const crossesGroup = document.getElementById('crosses');
+            const blocksGroup = document.getElementById('green-blocks');
+            if (!crossesGroup || !blocksGroup) return;
+
+            for (let i = 0; i < 60; i++) {
+                const x = Math.random() * 500;
+                const y = Math.random() * 500;
+                if (y > 400) continue; 
+                const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                text.setAttribute("x", x); text.setAttribute("y", y); text.textContent = "+";
+                crossesGroup.appendChild(text);
+            }
+            for (let i = 0; i < 50; i++) {
+                const x = Math.random() * 500;
+                const y = Math.random() * 500;
+                if (y > 400) continue;
+                const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                rect.setAttribute("x", x); rect.setAttribute("y", y);
+                const size = Math.random() > 0.7 ? 8 : 4;
+                rect.setAttribute("width", size); rect.setAttribute("height", size);
+                rect.setAttribute("opacity", Math.random() * 0.8 + 0.2);
+                blocksGroup.appendChild(rect);
+            }
+        }
+        generateNoise();
+
+        function switchScene(targetScene) {
+            const scene1 = document.getElementById('scene-1');
+            const scene2 = document.getElementById('scene-2');
+            const overlay = document.getElementById('transition-overlay');
+            overlay.classList.add('active');
+            setTimeout(() => {
+                if (targetScene === 1) {
+                    scene2.classList.remove('active'); scene1.classList.add('active');
+                } else {
+                    scene1.classList.remove('active'); scene2.classList.add('active');
+                }
+            }, 400);
+            setTimeout(() => { overlay.classList.remove('active'); }, 800); 
+        }
+    </script>
 </body>
 </html>

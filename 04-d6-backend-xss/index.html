@@ -2,67 +2,53 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>D6 - 存储型 XSS 演示</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2.0.6/css/pico.min.css">
+    <title>D6 - Stored XSS</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
-<body class="container">
-    <hgroup>
-        <h2>💬 真实后端留言板 (存储型 XSS)</h2>
-        <p>你的留言会被真实存入后端的“数据库”中，刷新页面甚至重启电脑都不会消失。</p>
-    </hgroup>
+<body>
+    <div class="terminal-panel panel-purple">
+        <h2 style="color: var(--color-purple);">[D6] Stored XSS</h2>
+        <p>测试 Payload: <code>&lt;img src=x onerror=alert(1)&gt;</code></p>
 
-    <article>
-        <header>💡 试试输入以下 Payload 提交</header>
-        <p><code>&lt;script&gt;alert('存储型XSS，所有人都会中招')&lt;/script&gt;</code></p>
-        <p><code>&lt;img src=x onerror=alert('你被攻击了！')&gt;</code></p>
-    </article>
+        <form id="commentForm" style="display: flex; gap: 10px;">
+            <input type="text" id="commentInput" placeholder="Insert payload into database..." required autocomplete="off" style="margin-bottom: 0;">
+            <button type="submit" class="btn btn-orange" style="flex: 0 0 150px;">INJECT</button>
+        </form>
 
-    <form id="commentForm">
-        <label for="commentInput">发表留言：</label>
-        <input type="text" id="commentInput" placeholder="说点什么..." required>
-        <button type="submit">提交留言（存入后端）</button>
-    </form>
-
-    <h3>最新留言区：</h3>
-    <div id="commentsList" style="margin-top: 20px;"></div>
+        <h3 style="font-size: 14px; margin-top: 30px;">> DB_OUTPUT_LOG:</h3>
+        <div id="commentsList" class="terminal-output" style="border-color: rgba(209,0,255,0.3); color: var(--color-purple);"></div>
+    </div>
+    <a href="/" class="back-link">&lt; RETURN TO TERMINAL</a>
 
     <script>
         const apiUrl = '/api/d6/comments';
-
         async function fetchComments() {
             const res = await fetch(apiUrl);
             const comments = await res.json();
             const list = document.getElementById('commentsList');
-            
             let html = '';
             comments.forEach(c => {
-                // 漏洞点：后端虽然做了转义，如果这里用 innerHTML 渲染，依然要小心
-                // 这里我们故意用 innerHTML 来测试真实环境，因为后端防住了，所以这里是安全的。
-                html += `
-                    <article style="border-left: 4px solid #3498db; margin-bottom: 10px;">
-                        <p>${c.text}</p>
-                    </article>
-                `;
+                html += `<div style="margin-bottom: 10px; border-bottom: 1px dashed #333; padding-bottom: 10px;">
+                            <span style="color: #666;">[LOG]</span> ${c.text}
+                         </div>`;
             });
-            list.innerHTML = html;
+            list.innerHTML = html || "[DB IS EMPTY]";
         }
 
         document.getElementById('commentForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const text = document.getElementById('commentInput').value;
-            
             await fetch(apiUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ text })
             });
-            
             document.getElementById('commentInput').value = '';
             fetchComments();
         });
-
         fetchComments();
+
+    
     </script>
 </body>
 </html>

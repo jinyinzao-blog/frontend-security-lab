@@ -2,51 +2,42 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>D5 - 真实银行 (受害者)</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2.0.6/css/pico.min.css">
+    <title>SECURE_BANK</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
-<body class="container">
-    <hgroup>
-        <h2>🏦 您的银行账户</h2>
-        <p>当前状态：<span id="loginStatus" style="color: red;">未登录</span></p>
-    </hgroup>
-    
-    <article style="text-align: center;">
-        <p>当前余额：<strong id="balance" style="font-size: 32px; color: #2ecc71;">等待登录...</strong> 元</p>
+<body>
+    <div class="terminal-panel panel-green">
+        <h2 style="color: var(--color-green);">[D5] Secure Bank</h2>
+        <p>STATUS: <span id="loginStatus" style="color: var(--color-red);">DISCONNECTED</span></p>
         
-        <div class="grid">
-            <button onclick="login()">1. 模拟登录 (获取 Cookie)</button>
-            <button onclick="refreshBalance()" class="secondary">2. 刷新余额</button>
+        <div style="margin: 40px 0; text-align: center; border: 2px solid #333; padding: 20px; background: #000;">
+            <div style="font-size: 14px; color: #666; margin-bottom: 10px;">CURRENT BALANCE</div>
+            <div style="font-size: 48px; font-weight: bold; color: var(--color-green);">
+                ¥<span id="balance">---</span>
+            </div>
         </div>
-    </article>
-
-    <article style="background-color: #fdf2f2; border-color: #e74c3c;">
-        <header style="color: #e74c3c;">⚠️ 危险提示</header>
-        <p>如果你在另一个标签页点开了黑客发给你的链接（<code>hacker.html</code>），你的余额可能会凭空消失！</p>
-    </article>
-
+        
+        <div class="btn-group">
+            <button onclick="login()" class="btn btn-green">Connect / Login</button>
+            <button onclick="refreshBalance()" class="btn">Refresh Data</button>
+        </div>
+    </div>
+    <a href="/" class="back-link">&lt; RETURN TO TERMINAL</a>
     <script>
         async function login() {
-            // 向后端请求登录，后端会自动把 Cookie 种在浏览器里
             await fetch('/api/d5/login', { method: 'POST' });
-            document.getElementById('loginStatus').textContent = "已登录 (Cookie 已种下)";
-            document.getElementById('loginStatus').style.color = "green";
+            document.getElementById('loginStatus').textContent = "CONNECTED [COOKIE SET]";
+            document.getElementById('loginStatus').style.color = "var(--color-green)";
             refreshBalance();
         }
-
         async function refreshBalance() {
-            try {
-                const res = await fetch('/api/d5/balance');
-                const data = await res.json();
-                if (res.status === 401) {
-                    document.getElementById('balance').textContent = "未登录";
-                    return;
-                }
-                document.getElementById('balance').textContent = data.balance;
-            } catch (error) {
-                document.getElementById('balance').textContent = "获取失败";
+            const res = await fetch('/api/d5/balance');
+            const data = await res.json();
+            if (res.status === 401) {
+                document.getElementById('balance').textContent = "???";
+                return;
             }
+            document.getElementById('balance').textContent = data.balance;
         }
     </script>
 </body>

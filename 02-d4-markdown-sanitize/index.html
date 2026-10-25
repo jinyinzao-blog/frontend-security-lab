@@ -2,41 +2,37 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>D4 - Markdown 富文本 XSS 防御</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2.0.6/css/pico.min.css">
+    <title>D4 - Markdown</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .split { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 768px) { .split { grid-template-columns: 1fr; } }
+    </style>
 </head>
-<body class="container">
-    <hgroup>
-        <h2>🛡️ 实验 2：DOM 型 XSS 与 Markdown 清洗</h2>
-        <p>模拟论坛留言，演示 <code>DOMPurify</code> 如何拦截恶意代码。</p>
-    </hgroup>
-
-    <article>
-        <header>💡 提示：试着输入以下 Payload</header>
-        <p>尝试输入：<code>&lt;img src=x onerror=alert('XSS')&gt;</code> 或者 Markdown 语法 <code>**加粗**</code></p>
-    </article>
-
-    <label for="input">留言内容 (支持 Markdown)：</label>
-    <textarea id="input" rows="4" placeholder="在这里输入留言...">Hello **Markdown**!</textarea>
-
-    <div class="grid">
-        <button id="render-unsafe" class="contrast" style="background-color: #e74c3c; border-color: #e74c3c;">⚠️ 漏洞模式（直接解析）</button>
-        <button id="render-safe" style="background-color: #2ecc71; border-color: #2ecc71;">✅ 防御模式（DOMPurify清洗）</button>
-    </div>
-
-    <div class="grid">
-        <article style="border-left: 4px solid #e74c3c;">
-            <header>不安全输出：</header>
-            <div id="output-unsafe"></div>
-        </article>
+<body>
+    <div class="terminal-panel" style="max-width: 900px; border-color: var(--color-blue); box-shadow: 8px 8px 0 rgba(0, 229, 255, 0.2);">
+        <h2 style="color: var(--color-blue);">[D4] Markdown Parser</h2>
+        <p>测试 Payload: <code>&lt;img src=x onerror=alert(1)&gt;</code></p>
         
-        <article style="border-left: 4px solid #2ecc71;">
-            <header>清洗后输出：</header>
-            <div id="output-safe"></div>
-        </article>
-    </div>
+        <textarea id="input" rows="3" placeholder="Enter Markdown/HTML...">**Hello World**</textarea>
+        
+        <div class="btn-group" style="margin-bottom: 20px;">
+            <button id="render-unsafe" class="btn btn-red">Execute innerHTML</button>
+            <button id="render-safe" class="btn btn-blue">Execute DOMPurify</button>
+        </div>
 
+        <div class="split">
+            <div>
+                <h3 style="font-size: 14px; color: var(--color-red);">> UNSAFE_OUTPUT:</h3>
+                <div id="output-unsafe" class="terminal-output" style="border-color: rgba(255,51,51,0.3);"></div>
+            </div>
+            <div>
+                <h3 style="font-size: 14px; color: var(--color-blue);">> SAFE_OUTPUT:</h3>
+                <div id="output-safe" class="terminal-output" style="border-color: rgba(0,229,255,0.3);"></div>
+            </div>
+        </div>
+    </div>
+    <a href="/" class="back-link">&lt; RETURN TO TERMINAL</a>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
     <script src="app.js"></script>

